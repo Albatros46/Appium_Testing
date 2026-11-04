@@ -1,0 +1,13 @@
+{
+  "name": "appium-testing-server",
+  "private": true,
+  "description": "The Appium server and its Android driver, pinned for this project",
+  "scripts": {
+    "appium": "appium --port 4723",
+    "doctor": "appium driver doctor uiautomator2"
+  },
+  "devDependencies": {
+    "appium": "3.9.0",
+    "appium-uiautomator2-driver": "8.7.3"
+  }
+}
