@@ -38,6 +38,8 @@ public abstract class BaseAppiumTest {
                 .setNewCommandTimeout(Duration.ofSeconds(120))
                 .setUiautomator2ServerInstallTimeout(Duration.ofMinutes(3))
                 .setAdbExecTimeout(Duration.ofMinutes(1));
+        // noReset alone leaves the app on the screen of the previous test: every test must start clean
+        options.amend("appium:forceAppLaunch", true);
         driver = new AndroidDriver(new URI(APPIUM_URL).toURL(), options);
         wait = new WebDriverWait(driver, Duration.ofSeconds(15));
     }
