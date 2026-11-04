@@ -13,6 +13,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>21</maven.compiler.release>
     <appium.client.version>11.0.0</appium.client.version>
+    <selenium.version>4.52.0</selenium.version>
     <testng.version>7.12.0</testng.version>
     <assertj.version>3.27.7</assertj.version>
   </properties>
@@ -22,6 +23,13 @@
       <groupId>io.appium</groupId>
       <artifactId>java-client</artifactId>
       <version>${appium.client.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- explicit waits; java-client 11 no longer brings it along -->
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-support</artifactId>
+      <version>${selenium.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
