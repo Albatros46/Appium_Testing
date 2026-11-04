@@ -11,6 +11,8 @@ if ($AvdHome) { $env:ANDROID_AVD_HOME = $AvdHome }
 $adb = Join-Path $sdk 'platform-tools\adb.exe'
 Start-Process (Join-Path $sdk 'emulator\emulator.exe') -WindowStyle Hidden -ArgumentList @(
     '-avd', $Name, '-no-window', '-no-audio', '-no-boot-anim', '-no-snapshot-save', '-gpu', 'swiftshader_indirect')
+# adb reports 'no emulators found' on stderr until the device is up: that is expected here, not an error
+$ErrorActionPreference = 'Continue'
 $deadline = (Get-Date).AddMinutes($TimeoutMinutes)
 while ((Get-Date) -lt $deadline) {
     $booted = & $adb -e shell getprop sys.boot_completed 2>$null
