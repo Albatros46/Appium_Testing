@@ -7,13 +7,13 @@ import java.time.Duration;
 import org.openqa.selenium.ScreenOrientation;
 import org.testng.annotations.Test;
 
-import com.servet.appium.base.BaseAppiumTest;
+import com.servet.appium.base.BaseSettingsTest;
 
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.appmanagement.ApplicationState;
 
 /** Mobile-only test types: what happens to the app when the device or the user interrupts it. */
-public class AppLifecycleTest extends BaseAppiumTest {
+public class AppLifecycleTest extends BaseSettingsTest {
 
     private static final String SEARCH =
             "new UiSelector().text(\"Search settings\")";

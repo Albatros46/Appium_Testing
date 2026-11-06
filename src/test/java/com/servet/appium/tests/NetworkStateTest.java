@@ -6,13 +6,13 @@ import org.openqa.selenium.By;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 
-import com.servet.appium.base.BaseAppiumTest;
+import com.servet.appium.base.BaseSettingsTest;
 import com.servet.appium.support.Adb;
 
 import io.appium.java_client.AppiumBy;
 
 /** Changes the device state from outside with adb and checks that the app shows it. */
-public class NetworkStateTest extends BaseAppiumTest {
+public class NetworkStateTest extends BaseSettingsTest {
 
     private static final By AIRPLANE_SWITCH = AppiumBy.id("com.android.settings:id/switchWidget");
     /** The switch itself is not clickable, the row around it is: tap the title like a user does. */
