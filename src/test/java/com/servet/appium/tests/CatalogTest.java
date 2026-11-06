@@ -16,15 +16,14 @@ public class CatalogTest extends BaseDemoAppTest {
     @Test(groups = "smoke")
     public void the_catalog_is_the_start_screen() {
         assertThat(visible(text("Products")).isDisplayed()).isTrue();
-        assertThat(productNames()).isNotEmpty();
+        assertThat(productNames()).hasSizeGreaterThan(1);
     }
 
     @Test
     public void products_are_sorted_by_name_at_the_start() {
-        visible(id("productTV"));
-        List<String> names = productNames();
+        visible(id("titleTV"));
 
-        assertThat(names).isSortedAccordingTo(String.CASE_INSENSITIVE_ORDER);
+        assertThat(productNames()).hasSizeGreaterThan(1).isSortedAccordingTo(String.CASE_INSENSITIVE_ORDER);
     }
 
     @DataProvider
@@ -40,18 +39,19 @@ public class CatalogTest extends BaseDemoAppTest {
     public void products_can_be_sorted(String option) {
         visible(id("sortIV")).click();
         visible(description(option)).click();
-        wait.until(d -> !productNames().isEmpty());
+        wait.until(d -> productNames().size() > 1);
 
         switch (option) {
-            case "Descending order by name" -> assertThat(productNames())
+            case "Descending order by name" -> assertThat(productNames()).hasSizeGreaterThan(1)
                     .isSortedAccordingTo(String.CASE_INSENSITIVE_ORDER.reversed());
-            case "Ascending order by price" -> assertThat(prices()).isSorted();
-            default -> assertThat(prices()).isSortedAccordingTo(Comparator.reverseOrder());
+            case "Ascending order by price" -> assertThat(prices()).hasSizeGreaterThan(1).isSorted();
+            default -> assertThat(prices()).hasSizeGreaterThan(1).isSortedAccordingTo(Comparator.reverseOrder());
         }
     }
 
+    /** "productTV" is the page title "Products"; the product names are in "titleTV". */
     private List<String> productNames() {
-        return driver.findElements(id("productTV")).stream().map(WebElement::getText).toList();
+        return driver.findElements(id("titleTV")).stream().map(WebElement::getText).toList();
     }
 
     private List<Double> prices() {
