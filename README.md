@@ -1,11 +1,16 @@
 # Appium Testing · Android automation with Java
 
 [![Android Tests](https://github.com/Albatros46/Appium_Testing/actions/workflows/android-tests.yml/badge.svg)](https://github.com/Albatros46/Appium_Testing/actions/workflows/android-tests.yml)
-![Java](https://img.shields.io/badge/Java-21-orange) ![Appium](https://img.shields.io/badge/Appium-3.9-662D91) ![UiAutomator2](https://img.shields.io/badge/UiAutomator2-8.7-3DDC84) ![Android](https://img.shields.io/badge/Android-15%20(API%2035)-3DDC84) ![TestNG](https://img.shields.io/badge/TestNG-7.12-CD6E00) ![Tests](https://img.shields.io/badge/tests-13-brightgreen)
+![Java](https://img.shields.io/badge/Java-21-orange) ![Appium](https://img.shields.io/badge/Appium-3.9-662D91) ![UiAutomator2](https://img.shields.io/badge/UiAutomator2-8.7-3DDC84) ![Android](https://img.shields.io/badge/Android-15%20(API%2035)-3DDC84) ![TestNG](https://img.shields.io/badge/TestNG-7.12-CD6E00) ![Tests](https://img.shields.io/badge/tests-29-brightgreen)
 
-Mobile test automation from the ground up: the concepts, a working Appium setup, and 13 tests on a real Android 15 emulator, locally and in GitHub Actions. The tests use the **Android Settings app**, which is on every device, so nothing has to be installed.
+Mobile test automation from the ground up: the concepts, a working Appium setup, and 29 tests on a real Android 15 emulator, locally and in GitHub Actions. They run against the preinstalled **Android Settings app** and against Sauce Labs' **[My Demo App](https://github.com/saucelabs/my-demo-app-android)**, a shop app made for test automation.
 
-Part of my 52-week QA Automation roadmap — **Week 21: mobile test types, Appium architecture, adb, setup**.
+Part of my 52-week QA Automation roadmap:
+
+| Week | Topic | Release |
+|---|---|---|
+| 21 | Mobile test types, Appium architecture, adb, setup | [v1.0.0](https://github.com/Albatros46/Appium_Testing/releases/tag/v1.0.0) |
+| 22 | Appium Java client + TestNG on My Demo App | [v1.1.0](https://github.com/Albatros46/Appium_Testing/releases/tag/v1.1.0) |
 
 ## Documentation
 
@@ -23,12 +28,29 @@ Part of my 52-week QA Automation roadmap — **Week 21: mobile test types, Appiu
 | `SettingsAppTest` | 3 | app starts · About page shows the model `adb` reports · Back key returns |
 | `AppLifecycleTest` | 3 | rotation · background and return · killed and restarted |
 | `NetworkStateTest` | 2 | airplane mode set with adb is shown in the app · switched in the app is seen by adb |
+| `CatalogTest` | 5 | start screen · default order · 3 sort orders with a data provider |
+| `ProductTest` | 3 | detail page matches the catalog · quantity · cart badge |
+| `CartTest` | 3 | content · total is price × quantity · removing an item |
+| `LoginTest` | 5 | valid login · 3 invalid logins with a data provider · known bug MDA-01 |
 
 Two independent channels check each other: **adb changes or reads the device, Appium reads or changes the app.**
 
-### Control run
+TestNG features used: **data providers** (sort orders, invalid logins), **groups** (`mvn test -Dgroups=smoke` runs 4 tests), `@BeforeMethod` with `dependsOnMethods` for preconditions after the session start.
 
-With the line that switches airplane mode on disabled, the test turned red as it should (`expected: "true" but was: "false"`) and a screenshot appeared in `target/screenshots`. The full suite then passed 3 times in a row (13/13).
+Each My Demo App test starts with **cleared app data** (`noReset=false`), so no test sees the cart or the login of another. Settings keeps its state, because it shows the state of the device.
+
+### Control runs
+
+| Change | Result |
+|---|---|
+| line that switches airplane mode on disabled | red: `expected: "true" but was: "false"`, screenshot saved |
+| cart total expected as price × 3 | red: `59.98` is not close to `89.97`, screenshot saved |
+
+### Defect found
+
+| ID | Finding | Test |
+|---|---|---|
+| **MDA-01** | An address that is not a registered user (`not-registered@example.com`) with any password is **logged in**: no error, the menu shows "Log Out". Locked users and empty fields are handled correctly. | `known_bug_mda_01_…` pins the behaviour and turns red once the app refuses such a login |
 
 ## What went wrong, and what it taught me
 
@@ -40,6 +62,8 @@ With the line that switches airplane mode on disabled, the test turned red as it
 | Newest driver refused | `uiautomator2` 9 needs Node 24.15, here 24.13 | pinned 8.7.3 in `package.json` |
 | `org.openqa.selenium.support.ui` missing | java-client 11 no longer brings `selenium-support` | added it with the Selenium version Maven resolved |
 | `start-emulator.ps1` stopped at once when it was finally run | in Windows PowerShell 5.1, adb's "no emulators found" on stderr became a terminating error under `ErrorActionPreference = 'Stop'` | the wait loop runs with `Continue`; scripts are now tested, not only written |
+| Sorting tests were green but proved nothing | `productTV` is the page title, not the products: the list had one element, and one element is always sorted | names are in `titleTV`; every list check now requires more than one element |
+| Expected an error for an unknown user | I had assumed the message; the app logs the user in | looked at the real screen, documented it as MDA-01 |
 | Airplane mode left on would break later tests | a failing test skips its last lines | `@AfterMethod(alwaysRun = true)` restores the device |
 
 ## Run it
@@ -48,6 +72,7 @@ Needs JDK 21+, Maven, Node.js 22+ and the Android SDK (`ANDROID_HOME`) with the 
 
 ```powershell
 npm ci                                                 # Appium and the driver, pinned, no global install
+.\scripts\download-demo-app.ps1                        # My Demo App, SHA-256 checked
 .\scripts\create-emulator.ps1 -AvdHome E:\Android\avd  # once
 .\scripts\start-emulator.ps1 -AvdHome E:\Android\avd   # waits for the boot
 npm run doctor                                         # checks the setup
@@ -57,7 +82,8 @@ npm run appium                                         # keep this terminal open
 In a second terminal:
 
 ```powershell
-mvn test                       # all 13 tests
+mvn test                       # all 29 tests
+mvn test -Dgroups=smoke        # the 4 most important My Demo App tests
 mvn test -Dtest=DeviceTest     # only the device checks, no Appium server needed
 ```
 
@@ -71,7 +97,8 @@ mvn test -Dtest=DeviceTest     # only the device checks, no Appium server needed
 |---|---|---|
 | First boot of a new emulator | 14 min (other work running, 2.6 GB RAM free) | 30 s |
 | Later boot | 95 s | — |
-| All 13 tests | 167 – 270 s (3 runs) | 71 s |
+| Settings tests only (13) | 167 – 270 s (3 runs) | 71 s |
+| All 29 tests | 534 – 590 s (2 runs) | see the latest run |
 
 ## Structure
 
@@ -81,9 +108,10 @@ scripts/                       create and start the emulator
 package.json                   Appium server and driver, pinned
 src/test/java/com/servet/appium/
 ├── base/BaseAppiumTest        one session per test, screenshot on failure
+├── base/BaseSettingsTest · BaseDemoAppTest   capabilities of each app
 ├── support/Adb                adb commands from Java
-└── tests/                     DeviceTest · SettingsAppTest · AppLifecycleTest · NetworkStateTest
+└── tests/                     Device · SettingsApp · AppLifecycle · NetworkState · Catalog · Product · Cart · Login
 ```
 
 ## Next steps
-My Demo App with Page Objects, gestures with W3C Actions, hybrid apps and WebViews, parallel devices with Cucumber, and a device cloud.
+Gestures with W3C Actions, Page Objects and a platform-independent framework, hybrid apps and WebViews, parallel devices with Cucumber, and a device cloud.
