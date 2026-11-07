@@ -25,7 +25,8 @@ public abstract class BaseDemoAppTest extends BaseAppiumTest {
                 .setAppPackage(PACKAGE)
                 .setAppActivity(".view.activities.SplashActivity")
                 .setAppWaitActivity("*.MainActivity")
-                .setNoReset(false); // a clean cart and no login in every test
+                .setNoReset(false) // a clean cart and no login in every test
+                .setAutoGrantPermissions(true); // the Drawing screen asks for a photo permission
     }
 
     protected static By id(String resourceId) {
