@@ -111,7 +111,7 @@ mvn test -Dtest=DeviceTest     # only the device checks, no Appium server needed
 | First boot of a new emulator | 14 min (other work running, 2.6 GB RAM free) | 30 s |
 | Later boot | 95 s | — |
 | Settings tests only (13) | 167 – 270 s (3 runs) | 71 s |
-| All 34 tests | 688 – 872 s | see the latest run |
+| All 34 tests | 688 – 872 s | 250 s |
 
 ## Structure
 
