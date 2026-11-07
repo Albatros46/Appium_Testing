@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 
+import org.openqa.selenium.InvalidElementStateException;
 import org.openqa.selenium.ScreenOrientation;
 import org.testng.annotations.Test;
 
@@ -20,12 +21,12 @@ public class AppLifecycleTest extends BaseSettingsTest {
 
     @Test
     public void the_app_survives_a_rotation_and_back() {
-        driver.rotate(ScreenOrientation.LANDSCAPE);
+        rotateTo(ScreenOrientation.LANDSCAPE);
         try {
             assertThat(driver.getOrientation()).isEqualTo(ScreenOrientation.LANDSCAPE);
             assertThat(driver.getCurrentPackage()).isEqualTo(SETTINGS);
         } finally {
-            driver.rotate(ScreenOrientation.PORTRAIT); // the device is shared: leave it as it was
+            rotateTo(ScreenOrientation.PORTRAIT); // the device is shared: leave it as it was
         }
         assertThat(visible(AppiumBy.androidUIAutomator(SEARCH)).isDisplayed()).isTrue();
     }
@@ -34,7 +35,7 @@ public class AppLifecycleTest extends BaseSettingsTest {
     public void the_app_returns_from_the_background() {
         driver.runAppInBackground(Duration.ofSeconds(2));
 
-        assertThat(driver.queryAppState(SETTINGS)).isEqualTo(ApplicationState.RUNNING_IN_FOREGROUND);
+        wait.until(d -> driver.queryAppState(SETTINGS) == ApplicationState.RUNNING_IN_FOREGROUND);
         assertThat(visible(AppiumBy.androidUIAutomator(SEARCH)).isDisplayed()).isTrue();
     }
 
@@ -45,7 +46,15 @@ public class AppLifecycleTest extends BaseSettingsTest {
 
         driver.activateApp(SETTINGS);
 
-        assertThat(driver.queryAppState(SETTINGS)).isEqualTo(ApplicationState.RUNNING_IN_FOREGROUND);
+        wait.until(d -> driver.queryAppState(SETTINGS) == ApplicationState.RUNNING_IN_FOREGROUND);
         assertThat(visible(AppiumBy.androidUIAutomator(SEARCH)).isDisplayed()).isTrue();
+    }
+
+    /** On a loaded device the driver gives up after 2 s: the rotation is simply asked for again. */
+    private void rotateTo(ScreenOrientation orientation) {
+        wait.ignoring(InvalidElementStateException.class).until(d -> {
+            driver.rotate(orientation);
+            return driver.getOrientation() == orientation;
+        });
     }
 }
